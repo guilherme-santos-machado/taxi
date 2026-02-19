@@ -1,7 +1,6 @@
 # Código de teste de base de taxi
 
 # Pacotes
-
 library(arrow)
 library(ggcorrplot)
 library(dplyr)
@@ -9,15 +8,14 @@ library(tidyr)
 library(hms)
 library(scales)
 
-
 # Lendo o arquivo Parquet
 df <- read_parquet("C:/Users/macha/OneDrive/Desktop/projetos/taxi/data/yellow_tripdata_2025-01.parquet")
+
 
 
 ### ANALISE DA BASE - INICIO ###
 # Checa tamanho do df (Colunas x Linhas)
 dim(df)
-
 
 # Checa nulos por coluna
 colSums(is.na(df))
@@ -25,6 +23,7 @@ colSums(is.na(df))
 # Sumario do df
 summary(df)
 ### ANALISE DA BASE - FIM ###
+
 
 
 ### TRABALHA DADO ORIGINAL - INICIO ###
@@ -37,32 +36,26 @@ df <- df %>%
            into = c("dropoff_date", "dropoff_time"),
            sep = " ")
 
+# Set a coluna de data como data format
+df$pickup_date <- as.Date(df$pickup_date)
+df$dropoff_date <- as.Date(df$dropoff_date)
 
 # Cria coluna trip_duration em segundos
 df$trip_duration <- as.integer(
   as_hms(df$dropoff_time) - as_hms(df$pickup_time)
 )
 
-# Set a coluna de data como data format
-df$pickup_date <- as.Date(df$pickup_date)
-df$dropoff_date <- as.Date(df$dropoff_date)
+# # # # # # # # # # # # # # # # # # # # # # # # Criar base com nome do VendoID pela documentacao
 ### TRABALHA DADO ORIGINAL - FIM ###
 
 
+
+### CRIA BASE NUMERICA PARA CORRELACAO - INICIO ###
 # Transforma o DF original em apenas numericos para correlação
 dados_num <- df[, sapply(df, is.numeric)]
 
-
-# Plota fráfico de tabela correlacional
+# Plota grafico de tabela correlacional
 ggcorrplot(cor(dados_num),tl.srt = 90)
-
-# Cria scatter plot
-plot(dados_num$improvement_surcharge, dados_num$mta_tax)
-abline(lm(dados_num$improvement_surcharge ~ dados_num$mta_tax), col="red")
-
-# Scatter plot geral (teste)
-#pairs(dados_num) # Sugestão de reduzir base para evitar erro.
-
 
 # Cria lista de variavel com valor relevante >= ou <= -5
 teste_df<-cor(dados_num) %>%
@@ -71,10 +64,23 @@ teste_df<-cor(dados_num) %>%
   filter(Var1 != Var2) %>% # Remove a diagonal (1.0)
   filter(abs(Freq) >= 0.5) %>% # Filtra impacto positivo/negativo
   arrange(desc(abs(Freq))) # Ordena
+### CRIA BASE NUMERICA PARA CORRELACAO - FIM ###
+
+
+
+### CRIA SCATTER PLOT - INICIO ###
+# Cria scatter plot
+plot(dados_num$improvement_surcharge, dados_num$mta_tax)
+abline(lm(dados_num$improvement_surcharge ~ dados_num$mta_tax), col="red")
+
+# Scatter plot geral (teste)
+#pairs(dados_num) # Sugestão de reduzir base para evitar erro.
+### CRIA SCATTER PLOT - FIM ###
+
 
 
 ### CRIA GRAFICO DE CUSTO POR DIA - INICIO ###
-# Analise geral
+### Analise geral
 daily_cost <- df %>%
   group_by(pickup_date) %>%
   summarise(total_cost = sum(total_amount, na.rm = TRUE))
@@ -85,12 +91,7 @@ ggplot(daily_cost, aes(x = pickup_date, y = total_cost)) +
   theme_minimal()
 
 ### Analise de comparacao de grupo
-
-#Checa a frequencia de VendoID
-df %>%
-  count(VendorID)
-
-#Cria grafico de grupo
+#Cria grafico de grupo por VendorID
 daily_cost_group <- df %>%
   group_by(pickup_date, VendorID) %>%
   summarise(total_cost = sum(total_amount, na.rm = TRUE),
@@ -103,6 +104,10 @@ ggplot(daily_cost_group, aes(x = pickup_date,
   scale_y_continuous(labels = scales::comma) +
   theme_minimal()
 
+#Checa a frequencia de VendoID
+df %>%
+  count(VendorID)
+
 # Cria tabela para confirmar dados do grafico
 View(df %>% filter(VendorID == 6)) #Observa o VendoID == 6
 
@@ -112,3 +117,15 @@ daily_cost_vendor <- df %>%
   summarise(total_cost = sum(total_amount, na.rm = TRUE),
             .groups = "drop")
 ### CRIA GRAFICO DE CUSTO POR DIA - FIM ###
+
+
+
+
+
+
+
+
+
+
+
+
