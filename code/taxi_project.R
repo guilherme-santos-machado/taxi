@@ -1,0 +1,95 @@
+# Código de teste de base de taxi
+
+# Instala pacotes
+install.packages("arrow")
+library(arrow)
+
+install.packages("ggcorrplot")
+library(ggcorrplot)
+
+install.packages("dplyr")
+library(dplyr)
+
+install.packages("tidyr")
+library(tidyr)
+
+install.packages("hms")
+library(hms)
+
+install.packages("scales")
+library(scales)
+
+
+library(arrow)
+library(ggcorrplot)
+library(dplyr)
+library(tidyr)
+library(hms)
+library(scales)
+
+
+# Lendo o arquivo Parquet
+df <- read_parquet("C:/Users/macha/OneDrive/Desktop/projetos/taxi/data/yellow_tripdata_2025-01.parquet")
+
+
+### ANALISE DA BASE - INICIO ###
+# Checa tamanho do df (Colunas x Linhas)
+dim(df)
+
+
+# Checa nulos por coluna
+colSums(is.na(df))
+
+# Sumario do df
+summary(df)
+### ANALISE DA BASE - FIM ###
+
+
+### TRABALHA DADO ORIGINAL - INICIO ###
+# Separa data e hora
+df <- df %>%
+  separate(tpep_pickup_datetime,
+           into = c("pickup_date", "pickup_time"),
+           sep = " ") %>%
+  separate(tpep_dropoff_datetime,
+           into = c("dropoff_date", "dropoff_time"),
+           sep = " ")
+
+
+# Cria coluna trip_duration em segundos
+df$trip_duration <- as.integer(
+  as_hms(df$dropoff_time) - as_hms(df$pickup_time)
+)
+
+# Set a coluna de data como data
+df$pickup_date <- as.Date(df$pickup_date)
+### TRABALHA DADO ORIGINAL - FIM ###
+
+
+# Transforma o DF original em apenas numericos para correlação
+dados_num <- df[, sapply(df, is.numeric)]
+
+
+# Plota fráfico de tabela correlacional
+ggcorrplot(cor(dados_num),tl.srt = 90)
+
+
+# Cria lista de variavel com valor relevante >= ou <= -5
+teste_df<-cor(dados_num) %>%
+  as.table() %>%
+  as.data.frame() %>%
+  filter(Var1 != Var2) %>% # Remove a diagonal (1.0)
+  filter(abs(Freq) >= 0.5) %>% # Filtra impacto positivo/negativo
+  arrange(desc(abs(Freq))) # Ordena
+
+
+### CRIA GRAFICO DE CUSTO POR DIA - INICIO ###
+daily_cost <- df %>%
+  group_by(pickup_date) %>%
+  summarise(total_cost = sum(total_amount, na.rm = TRUE))
+
+ggplot(daily_cost, aes(x = pickup_date, y = total_cost)) +
+  geom_line() +
+  scale_y_continuous(labels = comma) +
+  theme_minimal()
+### CRIA GRAFICO DE CUSTO POR DIA - FIM ###
