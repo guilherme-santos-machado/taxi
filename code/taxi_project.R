@@ -61,8 +61,9 @@ df$trip_duration <- as.integer(
   as_hms(df$dropoff_time) - as_hms(df$pickup_time)
 )
 
-# Set a coluna de data como data
+# Set a coluna de data como data format
 df$pickup_date <- as.Date(df$pickup_date)
+df$dropoff_date <- as.Date(df$dropoff_date)
 ### TRABALHA DADO ORIGINAL - FIM ###
 
 
@@ -72,6 +73,13 @@ dados_num <- df[, sapply(df, is.numeric)]
 
 # Plota fráfico de tabela correlacional
 ggcorrplot(cor(dados_num),tl.srt = 90)
+
+# Cria scatter plot
+plot(dados_num$improvement_surcharge, dados_num$mta_tax)
+abline(lm(dados_num$improvement_surcharge ~ dados_num$mta_tax), col="red")
+
+# Scatter plot geral (teste)
+#pairs(dados_num) # Sugestão de reduzir base para evitar erro.
 
 
 # Cria lista de variavel com valor relevante >= ou <= -5
