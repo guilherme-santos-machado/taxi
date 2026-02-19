@@ -105,4 +105,10 @@ ggplot(daily_cost_group, aes(x = pickup_date,
 
 # Cria tabela para confirmar dados do grafico
 View(df %>% filter(VendorID == 6)) #Observa o VendoID == 6
+
+# Cria tabela por total de VendorID
+daily_cost_vendor <- df %>%
+  group_by(VendorID) %>%
+  summarise(total_cost = sum(total_amount, na.rm = TRUE),
+            .groups = "drop")
 ### CRIA GRAFICO DE CUSTO POR DIA - FIM ###
