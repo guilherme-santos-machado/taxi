@@ -92,6 +92,7 @@ teste_df<-cor(dados_num) %>%
 
 
 ### CRIA GRAFICO DE CUSTO POR DIA - INICIO ###
+# Analise geral
 daily_cost <- df %>%
   group_by(pickup_date) %>%
   summarise(total_cost = sum(total_amount, na.rm = TRUE))
@@ -99,5 +100,18 @@ daily_cost <- df %>%
 ggplot(daily_cost, aes(x = pickup_date, y = total_cost)) +
   geom_line() +
   scale_y_continuous(labels = comma) +
+  theme_minimal()
+
+#Analise de comparacao de grupo
+daily_cost_group <- df %>%
+  group_by(pickup_date, VendorID) %>%
+  summarise(total_cost = sum(total_amount, na.rm = TRUE),
+            .groups = "drop")
+
+ggplot(daily_cost_group, aes(x = pickup_date,
+                       y = total_cost,
+                       color = factor(VendorID))) +
+  geom_line() +
+  scale_y_continuous(labels = scales::comma) +
   theme_minimal()
 ### CRIA GRAFICO DE CUSTO POR DIA - FIM ###
