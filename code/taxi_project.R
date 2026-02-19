@@ -1,24 +1,6 @@
 # Código de teste de base de taxi
 
-# Instala pacotes
-install.packages("arrow")
-library(arrow)
-
-install.packages("ggcorrplot")
-library(ggcorrplot)
-
-install.packages("dplyr")
-library(dplyr)
-
-install.packages("tidyr")
-library(tidyr)
-
-install.packages("hms")
-library(hms)
-
-install.packages("scales")
-library(scales)
-
+# Pacotes
 
 library(arrow)
 library(ggcorrplot)
