@@ -102,7 +102,13 @@ ggplot(daily_cost, aes(x = pickup_date, y = total_cost)) +
   scale_y_continuous(labels = comma) +
   theme_minimal()
 
-#Analise de comparacao de grupo
+### Analise de comparacao de grupo
+
+#Checa a frequencia de VendoID
+df %>%
+  count(VendorID)
+
+#Cria grafico de grupo
 daily_cost_group <- df %>%
   group_by(pickup_date, VendorID) %>%
   summarise(total_cost = sum(total_amount, na.rm = TRUE),
@@ -114,4 +120,7 @@ ggplot(daily_cost_group, aes(x = pickup_date,
   geom_line() +
   scale_y_continuous(labels = scales::comma) +
   theme_minimal()
+
+# Cria tabela para confirmar dados do grafico
+View(df %>% filter(VendorID == 6)) #Observa o VendoID == 6
 ### CRIA GRAFICO DE CUSTO POR DIA - FIM ###
